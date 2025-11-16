@@ -1,0 +1,32 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "ap-south-1"
+    ACCOUNT_ID: "213542716717"
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging into Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda-docker-repo:latest"
+      - echo "Image URI: $IMAGE_URI"
+
+  build:
+    commands:
+      - echo Building Docker image...
+      - docker build --provenance=false -t lambda-docker-repo .
+      - echo Tagging image...
+      - docker tag lambda-docker-repo:latest $IMAGE_URI
+
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push $IMAGE_URI
+      - echo Updating Lambda function...
+      - aws lambda update-function-code --function-name LambdaDockerFunction --image-uri $IMAGE_URI
+
+artifacts:
+  files:
+    - "**/*"
