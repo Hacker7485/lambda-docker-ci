@@ -24,7 +24,6 @@ phases:
     commands:
       - echo Pushing Docker image to ECR...
       - docker push $IMAGE_URI
-
       - echo Updating Lambda function...
       - aws lambda update-function-code --function-name LambdaDockerFunction --image-uri $IMAGE_URI
 
