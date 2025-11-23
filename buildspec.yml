@@ -9,7 +9,8 @@ phases:
   pre_build:
     commands:
       - echo "Logging into Amazon ECR..."
-      - $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com)
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
       - echo "Setting IMAGE_URI..."
       - export IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda-docker-repo:latest"
       - echo "Image URI is $IMAGE_URI"
@@ -25,6 +26,7 @@ phases:
     commands:
       - echo "Pushing Docker image to ECR..."
       - docker push $IMAGE_URI
+
       - echo "Updating Lambda function..."
       - aws lambda update-function-code --function-name LambdaDockerFunction --image-uri $IMAGE_URI
 
